@@ -1,0 +1,52 @@
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <img src="/assets/services/osmium-vehicles/logo.png" alt="" width="28" height="28" class="me-2 align-text-bottom">Osmium Vehicles Settings
+    </h4>
+    <button type="submit" form="settings-form" class="btn btn-primary">
+        <i class="bx bx-save me-1"></i> Save Settings
+    </button>
+</div>
+
+<?php if ($admin['settingsSaved']): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Settings saved successfully!
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($admin['settingsError']): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= \htmlspecialchars($admin['settingsError']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="<?= $admin['basePath'] ?>settings/vehicles/" id="settings-form">
+    <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bx bx-car me-2"></i>Listing page</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="listing_slug" class="form-label fw-semibold">Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">/</span>
+                            <input type="text" class="form-control" id="listing_slug" name="listing_slug" maxlength="60" required
+                                value="<?= \htmlspecialchars($admin['settings']['listingSlug']) ?>">
+                        </div>
+                        <div class="form-text">The page listing every vehicle, and the start of each vehicle's own address (for example <code>stock</code> gives <code>/stock/fiat-roller-team</code>). Vehicles already saved keep their address if you change this.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="listing_title" class="form-label fw-semibold">Page title</label>
+                        <input type="text" class="form-control" id="listing_title" name="listing_title" maxlength="120"
+                            value="<?= \htmlspecialchars($admin['settings']['listingTitle']) ?>">
+                        <div class="form-text">Used when the listing page is created, the first time a vehicle is saved. After that, edit the page under Pages.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

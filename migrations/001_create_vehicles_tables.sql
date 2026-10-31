@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS {PREFIX}vehicles (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    page_id INT UNSIGNED NOT NULL,
+    status VARCHAR(50) DEFAULT NULL,
+    make VARCHAR(100) NOT NULL,
+    model VARCHAR(255) NOT NULL,
+    year SMALLINT UNSIGNED DEFAULT NULL,
+    registration VARCHAR(20) DEFAULT NULL,
+    mileage INT UNSIGNED DEFAULT NULL,
+    price DECIMAL(10,2) UNSIGNED DEFAULT NULL,
+    engine VARCHAR(100) DEFAULT NULL,
+    transmission VARCHAR(100) DEFAULT NULL,
+    fuel VARCHAR(50) DEFAULT NULL,
+    description MEDIUMTEXT DEFAULT NULL,
+    features TEXT DEFAULT NULL,
+    specs TEXT DEFAULT NULL,
+    is_published TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_vehicles_page (page_id),
+    KEY idx_vehicles_published (is_published, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS {PREFIX}vehicle_images (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    vehicle_id INT UNSIGNED NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    position INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_vehicle_images_vehicle (vehicle_id, position),
+    CONSTRAINT fk_{PREFIX}vehicle_images_vehicle FOREIGN KEY (vehicle_id)
+        REFERENCES {PREFIX}vehicles(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
