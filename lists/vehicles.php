@@ -46,6 +46,7 @@ return [
         'emptyText' => 'No vehicles yet. Use New Vehicle to add the first.',
         'order' => null, // keep the server's newest-first order until a header is clicked
         'columns' => [
+            ['key' => 'image', 'label' => 'Image', 'type' => 'image', 'altKey' => 'name', 'sortable' => false],
             [
                 'key' => 'name',
                 'label' => 'Vehicle',
