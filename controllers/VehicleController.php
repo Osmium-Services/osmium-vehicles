@@ -336,8 +336,16 @@ class VehicleController extends AdminController
     private function listingPageId(): ?int
     {
         $settings = VehicleSettings::get();
-        $existing = (new Vehicle($this->osmium->dataSource))->indexPageId($settings['listingSlug']);
+        $vehicles = new Vehicle($this->osmium->dataSource);
+        $existing = $vehicles->indexPageId($settings['listingSlug']);
         if ($existing !== null) return $existing;
+
+        $binned = $vehicles->deletedIndexPageId($settings['listingSlug']); // Its address is still taken: bring it back rather than fail on the clash
+        if ($binned !== null) {
+            $this->pages()->restore($binned);
+
+            return $binned;
+        }
 
         return $this->pages()->create([
             'url' => $settings['listingSlug'],

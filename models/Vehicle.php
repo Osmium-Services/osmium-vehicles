@@ -115,6 +115,14 @@ class Vehicle extends Model
         return $row === null ? null : (int) $row['id'];
     }
 
+    /** The listing page's id when it sits in the Pages bin (soft-deleted), so a save can bring it back */
+    public function deletedIndexPageId(string $url): ?int
+    {
+        $row = $this->one('vehicle-deleted-index-page.sql', [':url' => $url]);
+
+        return $row === null ? null : (int) $row['id'];
+    }
+
     /** Pages the delete dialog can redirect to: id, url and title of each */
     public function linkTargets(): array
     {
