@@ -1,7 +1,7 @@
 {
     "id": "osmium-vehicles",
     "name": "Osmium Vehicles",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "Vehicles for sale (cars, caravans, motorhomes, vans) managed in admin and published as ordinary pages, with photo galleries, features and custom specs and the markup supplied by the theme",
     "category": "content",
     "author": {
@@ -31,7 +31,7 @@
             "items": [
                 {
                     "id": "vehicles",
-                    "label": "Vehicles",
+                    "label": "Osmium Vehicles",
                     "icon": "bx bx-car",
                     "color": "#e53935",
                     "placement": "top",
@@ -54,7 +54,7 @@
                 "controller": "controllers/VehicleController.php",
                 "class": "Osmium\\Services\\Vehicles\\Controllers\\VehicleController",
                 "method": "index",
-                "title": "Vehicles"
+                "title": "Osmium Vehicles"
             },
             "admin/vehicles/edit": {
                 "controller": "controllers/VehicleController.php",
