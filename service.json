@@ -1,7 +1,7 @@
 {
     "id": "osmium-vehicles",
     "name": "Osmium Vehicles",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "description": "Vehicles for sale (cars, caravans, motorhomes, vans) managed in admin and published as ordinary pages, with photo galleries, features and custom specs and the markup supplied by the theme",
     "category": "content",
     "author": {
