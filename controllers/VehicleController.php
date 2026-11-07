@@ -75,6 +75,8 @@ class VehicleController extends AdminController
             'metaDescription' => $row['meta_description'] ?? '',
         ];
         $this->data['admin']['images'] = $id ? (new VehicleImage($this->osmium->dataSource))->listFor($id) : [];
+        $this->data['admin']['makes'] = $model->makes();
+        $this->data['admin']['models'] = $model->models();
         $this->data['admin']['statuses'] = VehiclePresenter::STATUSES;
         $this->data['admin']['urlPrefix'] = $prefix;
         $this->data['admin']['maxUploadSize'] = \Osmium\Modules\Admin\Services\OsmiumAdmin::getMaxUploadSize()['formatted'] ?? '';

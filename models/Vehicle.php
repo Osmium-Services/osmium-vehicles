@@ -44,6 +44,18 @@ class Vehicle extends Model
         return $this->many('vehicle-list.sql');
     }
 
+    /** Distinct makes already entered, for the edit form's suggestions */
+    public function makes(): array
+    {
+        return \array_column($this->many('vehicle-list-makes.sql'), 'make');
+    }
+
+    /** Distinct models already entered, for the edit form's suggestions */
+    public function models(): array
+    {
+        return \array_column($this->many('vehicle-list-models.sql'), 'model');
+    }
+
     /** Created or changed in the last 24 hours, newest change first, capped at 10 */
     public function listRecent(): array
     {

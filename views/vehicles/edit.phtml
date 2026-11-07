@@ -29,11 +29,13 @@
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label for="vehicleMake" class="form-label">Make <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="vehicleMake" maxlength="100" required value="<?= \htmlspecialchars($v['make']) ?>">
+                            <input type="text" class="form-control" id="vehicleMake" maxlength="100" list="vehicleMakes" autocomplete="off" required value="<?= \htmlspecialchars($v['make']) ?>">
+                            <datalist id="vehicleMakes"><?php foreach ($admin['makes'] as $make): ?><option value="<?= \htmlspecialchars($make) ?>"><?php endforeach; ?></datalist>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="vehicleModel" class="form-label">Model <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="vehicleModel" maxlength="255" required value="<?= \htmlspecialchars($v['model']) ?>">
+                            <input type="text" class="form-control" id="vehicleModel" maxlength="255" list="vehicleModels" autocomplete="off" required value="<?= \htmlspecialchars($v['model']) ?>">
+                            <datalist id="vehicleModels"><?php foreach ($admin['models'] as $model): ?><option value="<?= \htmlspecialchars($model) ?>"><?php endforeach; ?></datalist>
                         </div>
                         <div class="col-md-2 mb-3">
                             <label for="vehicleYear" class="form-label">Year</label>
