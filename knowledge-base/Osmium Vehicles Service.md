@@ -1,6 +1,6 @@
 # Osmium Vehicles Service
 
-Repo `Osmium-Services/osmium-vehicles`, id `osmium-vehicles`, v0.1.1<!--v:osmium-vehicles-->, category content. Built 2026-10-31 from
+Repo `Osmium-Services/osmium-vehicles`, id `osmium-vehicles`, v0.1.9<!--v:osmium-vehicles-->, category content. Built 2026-10-31 from
 Vale Motorcaravans' vehicles feature so VMC can be brought onto the current core. Same shape as [[Blog Service (design)]].
 
 ## What it is
