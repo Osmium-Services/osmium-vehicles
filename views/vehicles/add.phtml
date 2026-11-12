@@ -1,0 +1,164 @@
+<?php $v = $admin['vehicle']; ?>
+<div class="d-flex justify-content-between align-items-center py-3 mb-4">
+    <h4 class="mb-0">
+        <img src="/assets/services/osmium-vehicles/logo.png" alt="" width="28" height="28" class="me-2 align-text-bottom"><span class="text-muted fw-light"><a href="<?= $adminUrl('vehicles/') ?>">Osmium Vehicles</a> /</span> New Vehicle
+    </h4>
+    <a href="<?= $adminUrl('vehicles/') ?>" class="btn btn-label-secondary">
+        <i class="bx bx-arrow-back me-1"></i> All vehicles
+    </a>
+</div>
+
+<?php if ($admin['showSavedMessage']): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bx bx-check-circle me-1"></i>
+        Vehicle saved successfully.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<div id="vehicleResult" class="alert d-none"></div>
+
+<form id="vehicleForm" autocomplete="off">
+    <input type="hidden" id="vehicleId" value="<?= (int) $v['id'] ?>">
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Details</h6></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="vehicleMake" class="form-label">Make <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="vehicleMake" maxlength="100" list="vehicleMakes" autocomplete="off" required value="<?= \htmlspecialchars($v['make']) ?>">
+                            <datalist id="vehicleMakes"><?php foreach ($admin['makes'] as $make): ?><option value="<?= \htmlspecialchars($make) ?>"><?php endforeach; ?></datalist>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleModel" class="form-label">Model <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="vehicleModel" maxlength="255" list="vehicleModels" autocomplete="off" required value="<?= \htmlspecialchars($v['model']) ?>">
+                            <datalist id="vehicleModels"><?php foreach ($admin['models'] as $model): ?><option value="<?= \htmlspecialchars($model) ?>"><?php endforeach; ?></datalist>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="vehicleYear" class="form-label">Year</label>
+                            <input type="number" class="form-control" id="vehicleYear" min="1900" step="1" value="<?= \htmlspecialchars((string) $v['year']) ?>">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="vehicleRegistration" class="form-label">Registration</label>
+                            <input type="text" class="form-control text-uppercase" id="vehicleRegistration" maxlength="20" placeholder="AB12 CDE" value="<?= \htmlspecialchars($v['registration']) ?>">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="vehiclePrice" class="form-label">Price (£)</label>
+                            <input type="number" class="form-control" id="vehiclePrice" min="0" step="1" value="<?= \htmlspecialchars($v['price']) ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleMileage" class="form-label">Mileage</label>
+                            <input type="number" class="form-control" id="vehicleMileage" min="0" step="1" value="<?= \htmlspecialchars((string) $v['mileage']) ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleFuel" class="form-label">Fuel</label>
+                            <input type="text" class="form-control" id="vehicleFuel" maxlength="50" placeholder="Diesel" value="<?= \htmlspecialchars($v['fuel']) ?>">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="vehicleEngine" class="form-label">Engine</label>
+                            <input type="text" class="form-control" id="vehicleEngine" maxlength="100" placeholder="2.3 litre" value="<?= \htmlspecialchars($v['engine']) ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="vehicleTransmission" class="form-label">Transmission</label>
+                            <input type="text" class="form-control" id="vehicleTransmission" maxlength="100" placeholder="Manual (6)" value="<?= \htmlspecialchars($v['transmission']) ?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Description</h6></div>
+                <div class="card-body">
+                    <textarea id="vehicleDescription"><?= \htmlspecialchars($v['description']) ?></textarea>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Extra specs</h6></div>
+                <div class="card-body">
+                    <div class="form-text mb-3">Anything else worth a label and a value, such as Berths 4, Seats 5 or Length 6.4 m.</div>
+                    <div id="vehicleSpecs"></div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addSpecButton">
+                        <i class="bx bx-plus me-1"></i> Add spec
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Features</h6></div>
+                <div class="card-body">
+                    <div id="vehicleFeatures"></div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addFeatureButton">
+                        <i class="bx bx-plus me-1"></i> Add feature
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Photos</h6></div>
+                <div class="card-body">
+                    <p class="text-muted mb-0">Save the vehicle first to add photos.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Publish</h6></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="vehicleStatus" class="form-label">Status</label>
+                        <select class="form-select" id="vehicleStatus">
+                            <option value="">Unset</option>
+                            <?php foreach ($admin['statuses'] as $status): ?>
+                                <option value="<?= \htmlspecialchars($status) ?>" <?= $status === $v['status'] ? 'selected' : '' ?>><?= \htmlspecialchars($status) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="vehiclePublished" <?= $v['isPublished'] ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="vehiclePublished">Show on the website</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100" id="vehicleSaveButton">Save</button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0">Search and sharing</h6></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="vehicleSlug" class="form-label">Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">/<?= \htmlspecialchars($admin['urlPrefix']) ?></span>
+                            <input type="text" class="form-control" id="vehicleSlug" maxlength="120" value="<?= \htmlspecialchars($v['slug']) ?>">
+                        </div>
+                        <div class="form-text">Changing it redirects the old address.</div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="vehicleMetaDescription" class="form-label">Meta description</label>
+                        <textarea class="form-control" id="vehicleMetaDescription" rows="3" maxlength="320"><?= \htmlspecialchars($v['metaDescription']) ?></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script nonce="<?= $cspNonce ?? '' ?>">
+    window.VehicleConfig = {
+        basePath: adminBasePath,
+        listUrl: <?= \json_encode($adminUrl('vehicles/')) ?>,
+        editUrl: <?= \json_encode($adminUrl('vehicles/edit/')) ?>,
+        features: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($v['features']) ?>,
+        specs: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($v['specs']) ?>,
+        images: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($admin['images']) ?>
+    };
+</script>
+<script src="/assets/services/osmium-vehicles/vehicle-edit.js<?= $adminAssetVersion('/assets/services/osmium-vehicles/vehicle-edit.js') ?>"></script>

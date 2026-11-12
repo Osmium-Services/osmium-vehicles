@@ -56,6 +56,12 @@
                 "method": "index",
                 "title": "Osmium Vehicles"
             },
+            "admin/vehicles/add": {
+                "controller": "controllers/VehicleController.php",
+                "class": "Osmium\\Services\\Vehicles\\Controllers\\VehicleController",
+                "method": "add",
+                "title": "New Vehicle"
+            },
             "admin/vehicles/edit": {
                 "controller": "controllers/VehicleController.php",
                 "class": "Osmium\\Services\\Vehicles\\Controllers\\VehicleController",

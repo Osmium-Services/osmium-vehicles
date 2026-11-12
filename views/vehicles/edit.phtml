@@ -1,7 +1,7 @@
 <?php $v = $admin['vehicle']; ?>
 <div class="d-flex justify-content-between align-items-center py-3 mb-4">
     <h4 class="mb-0">
-        <img src="/assets/services/osmium-vehicles/logo.png" alt="" width="28" height="28" class="me-2 align-text-bottom"><span class="text-muted fw-light"><a href="<?= $adminUrl('vehicles/') ?>">Osmium Vehicles</a> /</span> <?= $v['id'] ? 'Edit Vehicle' : 'New Vehicle' ?>
+        <img src="/assets/services/osmium-vehicles/logo.png" alt="" width="28" height="28" class="me-2 align-text-bottom"><span class="text-muted fw-light"><a href="<?= $adminUrl('vehicles/') ?>">Osmium Vehicles</a> /</span> Edit Vehicle
     </h4>
     <a href="<?= $adminUrl('vehicles/') ?>" class="btn btn-label-secondary">
         <i class="bx bx-arrow-back me-1"></i> All vehicles
@@ -104,15 +104,11 @@
             <div class="card mb-4">
                 <div class="card-header"><h6 class="mb-0">Photos</h6></div>
                 <div class="card-body">
-                    <?php if (!$v['id']): ?>
-                        <p class="text-muted mb-0">Save the vehicle first to add photos.</p>
-                    <?php else: ?>
-                        <div class="mb-3">
-                            <input type="file" class="form-control" id="vehicleImageUpload" accept="image/jpeg,image/png,image/webp,image/avif" multiple>
-                            <div class="form-text">JPG, PNG, WebP or AVIF, up to <?= \htmlspecialchars((string) $admin['maxUploadSize']) ?> each. Drag to reorder: the first photo is the cover.</div>
-                        </div>
-                        <div id="vehicleGallery" class="row g-3"></div>
-                    <?php endif; ?>
+                    <div class="mb-3">
+                        <input type="file" class="form-control" id="vehicleImageUpload" accept="image/jpeg,image/png,image/webp,image/avif" multiple>
+                        <div class="form-text">JPG, PNG, WebP or AVIF, up to <?= \htmlspecialchars((string) $admin['maxUploadSize']) ?> each. Drag to reorder: the first photo is the cover.</div>
+                    </div>
+                    <div id="vehicleGallery" class="row g-3"></div>
                 </div>
             </div>
         </div>

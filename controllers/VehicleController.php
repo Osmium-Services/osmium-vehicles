@@ -23,7 +23,8 @@ use Osmium\Services\Vehicles\Models\VehicleSettings;
  *
  * Routes:
  *   - index()  → /admin/vehicles/
- *   - edit()   → /admin/vehicles/edit/?id=N   (no id: a new vehicle)
+ *   - add()    → /admin/vehicles/add/
+ *   - edit()   → /admin/vehicles/edit/?id=N
  *   - action() → /admin/vehicles/action/      (save, delete, restore, permanently_delete, upload_image, delete_image, reorder_images)
  */
 class VehicleController extends AdminController
@@ -44,15 +45,28 @@ class VehicleController extends AdminController
         $this->setView('vehicles/index.phtml');
     }
 
+    public function add(): void
+    {
+        $this->osmium->clearStashedQuerystring();
+        $this->prepareFormData(model: new Vehicle($this->osmium->dataSource), id: 0, row: null);
+        $this->setView('vehicles/add.phtml');
+    }
+
     public function edit(): void
     {
         $model = new Vehicle($this->osmium->dataSource);
 
         $id = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
-        $this->osmium->clearStashedQuerystring(); // Or a later "New Vehicle" would reopen this one
+        $this->osmium->clearStashedQuerystring();
         $row = $id ? $model->getById($id) : null;
-        if ($id && !$row) $this->redirect('vehicles/');
+        if (!$row) $this->redirect('vehicles/');
 
+        $this->prepareFormData(model: $model, id: $id, row: $row);
+        $this->setView('vehicles/edit.phtml');
+    }
+
+    private function prepareFormData(Vehicle $model, int $id, ?array $row): void
+    {
         $prefix = VehicleSettings::get()['listingSlug'] . '/';
         $row ??= [];
         $this->data['admin']['vehicle'] = [
@@ -81,8 +95,6 @@ class VehicleController extends AdminController
         $this->data['admin']['urlPrefix'] = $prefix;
         $this->data['admin']['maxUploadSize'] = \Osmium\Modules\Admin\Services\OsmiumAdmin::getMaxUploadSize()['formatted'] ?? '';
         $this->data['admin']['showSavedMessage'] = $this->consumeSavedFlag();
-
-        $this->setView('vehicles/edit.phtml');
     }
 
     private function consumeSavedFlag(): bool
