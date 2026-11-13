@@ -38,11 +38,11 @@ class VehicleAdminBar
 
         $isVehicle = \preg_match('/^vehicle:(\d+)$/', $context, $match) === 1;
         if ($isVehicle) {
-            return [['label' => 'Edit vehicle', 'icon' => 'bx-edit-alt', 'path' => 'vehicles/edit/?id=' . (int)$match[1], 'primary' => true]];
+            return [['label' => 'Edit vehicle', 'icon' => 'bx-car', 'path' => 'vehicles/edit/?id=' . (int)$match[1], 'primary' => true]];
         }
 
         $isIndex = $context === 'vehicles-index:all';
-        if ($isIndex) return [['label' => 'Vehicles', 'icon' => 'bx-news', 'path' => 'vehicles/', 'primary' => true]];
+        if ($isIndex) return [['label' => 'Vehicles', 'icon' => 'bx-car', 'path' => 'vehicles/', 'primary' => true]];
 
         return null;
     }

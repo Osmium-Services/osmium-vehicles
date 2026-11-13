@@ -35,7 +35,7 @@ final class VehicleAdminBarTest extends TestCase
         $links = VehicleAdminBar::links(['context' => 'vehicle:12']);
 
         $this->assertSame('vehicles/edit/?id=12', $links[0]['path']);
-        $this->assertSame('bx-edit-alt', $links[0]['icon']);
+        $this->assertSame('bx-car', $links[0]['icon']);
         $this->assertTrue($links[0]['primary']);
     }
 
@@ -44,7 +44,7 @@ final class VehicleAdminBarTest extends TestCase
         $links = VehicleAdminBar::links(['context' => 'vehicles-index:all']);
 
         $this->assertSame('vehicles/', $links[0]['path']);
-        $this->assertSame('bx-news', $links[0]['icon']);
+        $this->assertSame('bx-car', $links[0]['icon']);
     }
 
     public function test_unknown_or_malformed_contexts_get_no_links(): void
