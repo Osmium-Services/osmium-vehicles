@@ -23,6 +23,12 @@
         ],
         "pages.owners": [
             "Osmium\\Services\\Vehicles\\Models\\VehicleOwners::pages"
+        ],
+        "adminbar.context": [
+            "Osmium\\Services\\Vehicles\\Models\\VehicleAdminBar::context"
+        ],
+        "adminbar.links": [
+            "Osmium\\Services\\Vehicles\\Models\\VehicleAdminBar::links"
         ]
     },
     "admin": {
