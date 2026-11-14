@@ -42,7 +42,7 @@ class VehicleAdminBar
         }
 
         $isIndex = $context === 'vehicles-index:all';
-        if ($isIndex) return [['label' => 'Vehicles', 'icon' => 'bx-car', 'path' => 'vehicles/', 'primary' => true]];
+        if ($isIndex) return [['label' => 'Edit vehicles', 'icon' => 'bx-car', 'path' => 'vehicles/', 'primary' => true]];
 
         return null;
     }
