@@ -56,7 +56,7 @@ final class VehiclesMcpTest extends TestCase
             $this->row(['id' => 4, 'status' => null]),
         ], [], self::NOW);
 
-        $this->assertSame(['live' => 4, 'published' => 3, 'hidden' => 1, 'by_status' => ['For Sale' => 2, 'Sold' => 1, 'none' => 1]], $out['counts']);
+        $this->assertSame(['live' => 4, 'published' => 3, 'published_for_sale' => 2, 'hidden' => 1, 'by_status' => ['For Sale' => 2, 'Sold' => 1, 'none' => 1]], $out['counts']);
     }
 
     public function test_a_healthy_vehicle_has_no_problems(): void
@@ -96,14 +96,47 @@ final class VehiclesMcpTest extends TestCase
         $this->assertSame(0, $p['short_description']['total']);
     }
 
-    public function test_listed_over_90_days_ignores_sold_in_any_case(): void
+    public function test_sold_vehicles_appear_in_no_problem_list_in_any_case(): void
+    {
+        $bare = ['price' => null, 'year' => null, 'mileage' => null, 'image_count' => 0, 'description_length' => 0, 'created_at' => $this->days(200)];
+        $rows = [
+            $this->row($bare + ['id' => 1, 'status' => 'Sold']),
+            $this->row($bare + ['id' => 2, 'status' => 'SOLD']),
+            $this->row($bare + ['id' => 3, 'status' => 'Sold - deposit taken']),
+            $this->row($bare + ['id' => 4, 'status' => 'For Sale']),
+        ];
+
+        $out = VehiclesMcp::shape($rows, [1, 2, 3, 4], self::NOW);
+
+        foreach ($out['published_problems'] as $name => $problem) {
+            $this->assertSame([4], \array_column($problem['vehicles'], 'id'), $name);
+        }
+        $this->assertSame(4, $out['counts']['live']);
+        $this->assertSame(4, $out['counts']['published']);
+        $this->assertSame(1, $out['counts']['published_for_sale']);
+        $this->assertSame(['Sold' => 1, 'SOLD' => 1, 'Sold - deposit taken' => 1, 'For Sale' => 1], $out['counts']['by_status']);
+    }
+
+    public function test_published_for_sale_excludes_hidden_and_sold(): void
+    {
+        $out = VehiclesMcp::shape([
+            $this->row(['id' => 1]),
+            $this->row(['id' => 2, 'status' => null]),
+            $this->row(['id' => 3, 'status' => 'Sold']),
+            $this->row(['id' => 4, 'is_published' => 0]),
+        ], [], self::NOW);
+
+        $this->assertSame(3, $out['counts']['published']);
+        $this->assertSame(2, $out['counts']['published_for_sale']);
+    }
+
+    public function test_listed_over_90_days_is_just_the_age_test(): void
     {
         $p = $this->problems([
             $this->row(['id' => 1, 'created_at' => $this->days(91)]),
-            $this->row(['id' => 2, 'created_at' => $this->days(91), 'status' => 'SOLD']),
-            $this->row(['id' => 3, 'created_at' => $this->days(91), 'status' => 'Sold - collected']),
             $this->row(['id' => 4, 'created_at' => $this->days(90)]),
             $this->row(['id' => 5, 'created_at' => $this->days(91), 'status' => null]),
+            $this->row(['id' => 6, 'created_at' => $this->days(91), 'status' => 'Sold']),
         ]);
 
         $this->assertSame([1, 5], \array_column($p['listed_over_90_days']['vehicles'], 'id'));

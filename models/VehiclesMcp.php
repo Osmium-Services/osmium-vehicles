@@ -25,7 +25,7 @@ class VehiclesMcp
         return [
             [
                 'name' => 'vehicles_attention',
-                'description' => 'Stock health for the vehicles for sale: how many are live, published and hidden (by status too), then the published vehicles that need attention, each list with a total and up to 25 vehicles (id, name, year, status, page address, days listed): no photos, a photo file missing on disk, no price, a description under 100 characters, no year, no mileage, and listed over 90 days and not sold. Binned vehicles are left out. Read only. It never returns registrations, description text, features or specs.',
+                'description' => 'Stock health for the vehicles for sale: how many are live, published and hidden (by status too), then the published vehicles that are not sold and need attention, each list with a total and up to 25 vehicles (id, name, year, status, page address, days listed): no photos, a photo file missing on disk, no price, a description under 100 characters, no year, no mileage, and listed over 90 days. Sold vehicles are left out of these lists (they still count in the totals). Binned vehicles are left out. Read only. It never returns registrations, description text, features or specs.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass()],
                 'handler' => self::class . '::attention',
             ],
@@ -55,6 +55,7 @@ class VehiclesMcp
         $missing = \array_flip($missingPhotoIds);
         $problems = [];
         $published = 0;
+        $forSale = 0;
         $byStatus = [];
 
         foreach ($rows as $row) {
@@ -64,6 +65,9 @@ class VehiclesMcp
             if ((int) $row['is_published'] !== 1) continue;
 
             $published++;
+            if (self::isSold($row)) continue;
+
+            $forSale++;
             $entry = self::entry($row, $now);
             foreach (self::flags($row, $entry, isset($missing[(int) $row['id']])) as $problem) {
                 $problems[$problem][] = $entry;
@@ -71,7 +75,7 @@ class VehiclesMcp
         }
 
         return [
-            'counts' => ['live' => \count($rows), 'published' => $published, 'hidden' => \count($rows) - $published, 'by_status' => $byStatus],
+            'counts' => ['live' => \count($rows), 'published' => $published, 'published_for_sale' => $forSale, 'hidden' => \count($rows) - $published, 'by_status' => $byStatus],
             'published_problems' => self::capped($problems),
         ];
     }
@@ -95,13 +99,20 @@ class VehiclesMcp
 
     /**
      * @param array<string, mixed> $row
+     */
+    private static function isSold(array $row): bool
+    {
+        return \stripos((string) ($row['status'] ?? ''), 'sold') !== false;
+    }
+
+    /**
+     * @param array<string, mixed> $row
      * @param array<string, mixed> $entry
      * @return array<int, string> the problem names that apply
      */
     private static function flags(array $row, array $entry, bool $photoMissing): array
     {
         $price = $row['price'] ?? null;
-        $isSold = \stripos((string) ($row['status'] ?? ''), 'sold') !== false;
         $tests = [
             'no_photos' => (int) $row['image_count'] === 0,
             'photo_file_missing' => $photoMissing,
@@ -109,7 +120,7 @@ class VehiclesMcp
             'short_description' => (int) $row['description_length'] < self::SHORT_DESCRIPTION,
             'no_year' => ($row['year'] ?? null) === null,
             'no_mileage' => ($row['mileage'] ?? null) === null,
-            'listed_over_90_days' => $entry['days_listed'] > self::OLD_DAYS && !$isSold,
+            'listed_over_90_days' => $entry['days_listed'] > self::OLD_DAYS,
         ];
 
         return \array_keys(\array_filter($tests));
