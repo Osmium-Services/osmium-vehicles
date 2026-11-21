@@ -137,12 +137,20 @@ class VehiclesMcp
 
         return [
             'id' => (int) $row['id'],
-            'name' => \trim(\trim((string) ($row['make'] ?? '')) . ' ' . \trim((string) ($row['model'] ?? ''))),
+            'name' => self::name($row),
             'year' => isset($row['year']) ? (int) $row['year'] : null,
             'status' => self::status($row['status'] ?? null),
             'url' => (string) ($row['url'] ?? ''),
             'days_listed' => $days,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    public static function name(array $row): string
+    {
+        return \trim(\trim((string) ($row['make'] ?? '')) . ' ' . \trim((string) ($row['model'] ?? '')));
     }
 
     private static function status(mixed $status): ?string

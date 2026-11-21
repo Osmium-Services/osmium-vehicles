@@ -147,6 +147,18 @@ class Vehicle extends Model
         return $this->many('vehicle-image-paths.sql');
     }
 
+    /** Live vehicles (page not in the bin), newest first, for the MCP list: no registration, description text or specs */
+    public function listLive(int $limit): array
+    {
+        return $this->many('vehicle-list-live.sql', [':limit' => $limit], \PDO::PARAM_INT);
+    }
+
+    /** Changes only the status (and updated_at), for the MCP status tool. The caller checks the value */
+    public function setStatus(int $id, string $status): void
+    {
+        $this->run('vehicle-status-set.sql', [':id' => $id, ':status' => $status]);
+    }
+
     /** Pages the delete dialog can redirect to: id, url and title of each */
     public function linkTargets(): array
     {

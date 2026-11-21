@@ -1,7 +1,7 @@
 {
     "id": "osmium-vehicles",
     "name": "Osmium Vehicles",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "description": "Vehicles for sale (cars, caravans, motorhomes, vans) managed in admin and published as ordinary pages, with photo galleries, features and custom specs and the markup supplied by the theme",
     "category": "content",
     "author": {
@@ -31,7 +31,8 @@
             "Osmium\\Services\\Vehicles\\Models\\VehicleAdminBar::links"
         ],
         "mcp.tools": [
-            "Osmium\\Services\\Vehicles\\Models\\VehiclesMcp::tools"
+            "Osmium\\Services\\Vehicles\\Models\\VehiclesMcp::tools",
+            "Osmium\\Services\\Vehicles\\Models\\VehiclesWriteMcp::tools"
         ]
     },
     "admin": {
