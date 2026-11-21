@@ -135,6 +135,18 @@ class Vehicle extends Model
         return $row === null ? null : (int) $row['id'];
     }
 
+    /** Every live vehicle with the figures the MCP stock-health tool needs (no registration, description text or specs) */
+    public function attentionRows(): array
+    {
+        return $this->many('vehicle-attention.sql');
+    }
+
+    /** Vehicle id and stored photo path for each photo of a published live vehicle */
+    public function publishedImagePaths(): array
+    {
+        return $this->many('vehicle-image-paths.sql');
+    }
+
     /** Pages the delete dialog can redirect to: id, url and title of each */
     public function linkTargets(): array
     {
