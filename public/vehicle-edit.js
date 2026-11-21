@@ -129,12 +129,12 @@
         img.className = 'card-img-top';
         img.style.cssText = 'height: 120px; object-fit: cover; cursor: grab;';
 
-        const body = document.createElement('div');
-        body.className = 'card-body p-2';
         const remove = document.createElement('button');
         remove.type = 'button';
-        remove.className = 'btn btn-sm btn-outline-danger w-100';
-        remove.innerHTML = '<i class="bx bx-trash"></i> Remove';
+        remove.className = 'btn btn-sm btn-icon btn-danger btn-delete-image';
+        remove.title = 'Remove photo';
+        remove.setAttribute('aria-label', 'Remove photo');
+        remove.innerHTML = '<i class="bx bx-trash"></i>';
         remove.addEventListener('click', async function () {
             if (!(await adminConfirm('Remove this photo?'))) return;
             try {
@@ -145,9 +145,12 @@
             }
         });
 
-        body.appendChild(remove);
-        card.append(img, body);
-        col.appendChild(card);
+        const badge = document.createElement('span');
+        badge.className = 'cover-badge badge bg-primary'; // Shown by CSS on whichever photo is first
+        badge.textContent = 'Cover';
+
+        card.appendChild(img);
+        col.append(card, badge, remove);
         gallery.appendChild(col);
     }
 
@@ -166,36 +169,47 @@
             }
         });
 
-        uploadInput.addEventListener('change', async function () {
-            const files = Array.from(uploadInput.files);
-            uploadInput.disabled = true;
-
-            for (const file of files) {
-                const formData = new FormData();
-                formData.append('csrf_token', window.csrfToken);
-                formData.append('action', 'upload_image');
-                formData.append('id', vehicleId);
-                formData.append('image', file);
-
-                try {
-                    const response = await fetch(actionUrl, { method: 'POST', body: formData });
-                    const data = await response.json();
-                    if (!data.success) throw new Error(data.error || data.message || 'Upload failed');
-                    renderPhoto(data.image);
-                } catch (error) {
-                    adminAlert(file.name + ': ' + error.message);
-                }
-            }
-
-            uploadInput.value = '';
-            uploadInput.disabled = false;
+        VehicleUploader.attach({
+            input: uploadInput,
+            dropzone: document.getElementById('vehicleDropzone'),
+            list: document.getElementById('vehicleUploadList'),
+            actionUrl: actionUrl,
+            getVehicleId: function () { return vehicleId; },
+            onUploaded: renderPhoto,
+            onActiveChange: function () {}
         });
     }
 
     // ---- Save ----
 
+    // The form is not natively validated (a required field in a hidden tab cannot be focused), so show the tab instead
+    function showTabFor(element) {
+        const pane = element.closest('.tab-pane');
+        const link = pane ? document.querySelector('.vehicle-tabs [href="#' + pane.id + '"]') : null;
+        if (link) bootstrap.Tab.getOrCreateInstance(link).show();
+    }
+
+    function tabIdForError(message) {
+        if (/address|url/i.test(message)) return 'vehicleSlug';
+        if (/make|model|year|mileage|price/i.test(message)) return 'vehicleMake';
+        return null;
+    }
+
+    function missingRequired() {
+        return Array.from(form.querySelectorAll('[required]')).find(function (input) { return input.value.trim() === ''; });
+    }
+
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        const missing = missingRequired();
+        if (missing) {
+            showTabFor(missing);
+            missing.focus();
+            showResult('Make and model are required.', 'danger');
+            return;
+        }
+
         saveButton.disabled = true;
 
         const value = function (id) { return document.getElementById(id).value; };
@@ -227,6 +241,8 @@
             // Go to the vehicle by id: the page shows the same saved bar as every other edit screen
             window.location.href = config.editUrl + '?id=' + data.id;
         } catch (error) {
+            const fieldId = tabIdForError(error.message);
+            if (fieldId) showTabFor(document.getElementById(fieldId));
             showResult(error.message, 'danger');
             saveButton.disabled = false;
         }

@@ -1,0 +1,80 @@
+<!-- Details tab -->
+<div class="tab-pane fade show active" id="details-tab" role="tabpanel">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bx bx-info-circle me-2"></i>Vehicle details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="vehicleMake" class="form-label">Make <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="vehicleMake" maxlength="100" list="vehicleMakes" autocomplete="off" required value="<?= \htmlspecialchars($v['make']) ?>">
+                            <datalist id="vehicleMakes"><?php foreach ($admin['makes'] as $make): ?><option value="<?= \htmlspecialchars($make) ?>"><?php endforeach; ?></datalist>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleModel" class="form-label">Model <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="vehicleModel" maxlength="255" list="vehicleModels" autocomplete="off" required value="<?= \htmlspecialchars($v['model']) ?>">
+                            <datalist id="vehicleModels"><?php foreach ($admin['models'] as $model): ?><option value="<?= \htmlspecialchars($model) ?>"><?php endforeach; ?></datalist>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="vehicleYear" class="form-label">Year</label>
+                            <input type="number" class="form-control" id="vehicleYear" min="1900" step="1" value="<?= \htmlspecialchars((string) $v['year']) ?>">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="vehicleRegistration" class="form-label">Registration</label>
+                            <input type="text" class="form-control text-uppercase" id="vehicleRegistration" maxlength="20" placeholder="AB12 CDE" value="<?= \htmlspecialchars($v['registration']) ?>">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="vehiclePrice" class="form-label">Price (£)</label>
+                            <input type="number" class="form-control" id="vehiclePrice" min="0" step="1" value="<?= \htmlspecialchars($v['price']) ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleMileage" class="form-label">Mileage</label>
+                            <input type="number" class="form-control" id="vehicleMileage" min="0" step="1" value="<?= \htmlspecialchars((string) $v['mileage']) ?>">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="vehicleFuel" class="form-label">Fuel</label>
+                            <input type="text" class="form-control" id="vehicleFuel" maxlength="50" placeholder="Diesel" value="<?= \htmlspecialchars($v['fuel']) ?>">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="vehicleEngine" class="form-label">Engine</label>
+                            <input type="text" class="form-control" id="vehicleEngine" maxlength="100" placeholder="2.3 litre" value="<?= \htmlspecialchars($v['engine']) ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="vehicleTransmission" class="form-label">Transmission</label>
+                            <input type="text" class="form-control" id="vehicleTransmission" maxlength="100" placeholder="Manual (6)" value="<?= \htmlspecialchars($v['transmission']) ?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bx bx-show me-2"></i>Publish</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="vehicleStatus" class="form-label">Status</label>
+                        <select class="form-select" id="vehicleStatus">
+                            <option value="">Unset</option>
+                            <?php foreach ($admin['statuses'] as $status): ?>
+                                <option value="<?= \htmlspecialchars($status) ?>" <?= $status === $v['status'] ? 'selected' : '' ?>><?= \htmlspecialchars($status) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="vehiclePublished" <?= $v['isPublished'] ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="vehiclePublished">Show on the website</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

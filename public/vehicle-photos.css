@@ -1,0 +1,57 @@
+/* Cover badge, shared by the add wizard and the edit page: the first photo in the gallery is the cover.
+   Pure CSS, so it follows reordering, deleting and uploading with no script */
+.wizard-photo,
+.vehicle-photo {
+    position: relative;
+}
+
+.wizard-photo .cover-badge,
+.vehicle-photo .cover-badge {
+    display: none;
+    position: absolute;
+    top: 6px;
+    left: 14px;
+}
+
+.vehicle-photo .cover-badge {
+    top: 14px;
+}
+
+.wizard-photo:first-child .cover-badge,
+.vehicle-photo:first-child .cover-badge {
+    display: inline-block;
+}
+
+/* Remove button over the photo, top right (the Shop's delete-image pattern) */
+.vehicle-photo .btn-delete-image {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+
+/* Drop zone and upload rows, shared by the wizard and the edit page */
+.wizard-dropzone {
+    display: block;
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.wizard-dropzone:hover,
+.wizard-dropzone.is-dragover {
+    border-color: #696cff;
+    background: rgba(105, 108, 255, 0.06);
+}
+
+.wizard-upload-row {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.wizard-upload-row .progress {
+    height: 4px;
+}

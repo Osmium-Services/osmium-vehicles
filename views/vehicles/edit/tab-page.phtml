@@ -1,0 +1,26 @@
+<!-- Page tab -->
+<div class="tab-pane fade" id="page-tab" role="tabpanel">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bx bx-search me-2"></i>Search and sharing</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="vehicleSlug" class="form-label">Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">/<?= \htmlspecialchars($admin['urlPrefix']) ?></span>
+                            <input type="text" class="form-control" id="vehicleSlug" maxlength="120" value="<?= \htmlspecialchars($v['slug']) ?>">
+                        </div>
+                        <div class="form-text">Changing it redirects the old address.</div>
+                    </div>
+                    <div class="mb-0">
+                        <label for="vehicleMetaDescription" class="form-label">Meta description</label>
+                        <textarea class="form-control" id="vehicleMetaDescription" rows="3" maxlength="320"><?= \htmlspecialchars($v['metaDescription']) ?></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

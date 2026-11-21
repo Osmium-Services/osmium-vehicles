@@ -1,0 +1,14 @@
+/* Vehicle edit page: tab strip. Wraps onto further rows rather than scrolling sideways, with 44px touch targets on phones */
+.vehicle-tabs { flex-wrap: wrap; row-gap: .35rem; column-gap: .25rem; }
+.vehicle-tabs .nav-link { white-space: nowrap; }
+
+@media (max-width: 767.98px) {
+    .vehicle-tabs { row-gap: .5rem; }
+    .vehicle-tabs .nav-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        padding-left: .9rem;
+        padding-right: .9rem;
+    }
+}
