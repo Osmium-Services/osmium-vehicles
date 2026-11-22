@@ -16,7 +16,24 @@ class VehicleOwners
      */
     public static function pages(array $payload): array
     {
-        $vehicles = new Vehicle($payload['osmium']->dataSource);
+        return self::owned($payload['osmium']->dataSource);
+    }
+
+    /**
+     * The vehicles' pages and listing page, for the `sitemap.groups` hook: one child sitemap of its own.
+     *
+     * @param array{dataSource: object} $payload
+     * @return array{key: string, label: string, pageIds: array<int, int>}
+     */
+    public static function sitemapGroups(array $payload): array
+    {
+        return ['key' => 'vehicles', 'label' => 'Vehicles', 'pageIds' => \array_keys(self::owned($payload['dataSource']))];
+    }
+
+    /** @return array<int, array{label: string, editUrl: string}> keyed by page id */
+    private static function owned(object $dataSource): array
+    {
+        $vehicles = new Vehicle($dataSource);
 
         $owned = [];
         foreach ($vehicles->ownedPages() as $row) {
