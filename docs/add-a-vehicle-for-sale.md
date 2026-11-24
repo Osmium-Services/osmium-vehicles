@@ -1,6 +1,7 @@
 ---
 title: Add a vehicle for sale
 tags: vehicles, cars, caravans, motorhomes, vans, stock, photos, specs, publish
+page: admin/vehicles, admin/vehicles/add, admin/vehicles/edit*, admin/settings/vehicles
 ---
 
 **Vehicles** lists the cars, caravans, motorhomes or vans you have for sale, each published as its own page.
