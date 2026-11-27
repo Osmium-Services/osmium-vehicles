@@ -14,10 +14,14 @@
                     </label>
                     <input type="file" class="d-none" id="vehicleImageUpload" accept="image/*" multiple>
                     <div id="vehicleUploadList" class="mt-3"></div>
-                    <div class="form-text mb-2">Drag photos to reorder them. The first photo is the cover.</div>
-                    <div id="vehicleGallery" class="row g-3"></div>
                 </div>
             </div>
+            <?= \Osmium\Modules\Admin\Core\ListView::render($admin['photoList'], $admin['photos'], [
+                'adminUrl' => $adminUrl,
+                'isAdmin' => true,
+                'editors' => [],
+                'avatarUrl' => $admin['avatarUrl'] ?? '',
+            ]) ?>
         </div>
     </div>
 </div>

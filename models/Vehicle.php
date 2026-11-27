@@ -69,8 +69,8 @@ class Vehicle extends Model
     }
 
     /**
-     * Published vehicles, newest first, each decorated by VehiclePresenter (display name, first image, price text,
-     * address). For the listing page and a theme's "latest vehicles".
+     * Published vehicles in the order set in admin, each decorated by VehiclePresenter (display name, first image, price
+     * text, address). For the listing page.
      */
     public function published(int $limit): array
     {
@@ -79,14 +79,18 @@ class Vehicle extends Model
         return \array_map(VehiclePresenter::card(...), $rows);
     }
 
+    /** The newest published vehicles whatever the admin order, for a theme's "latest vehicles" */
     public function latest(int $count): array
     {
-        return $this->published(limit: $count);
+        $rows = $this->many('vehicle-list-latest.sql', [':limit' => $count], \PDO::PARAM_INT);
+
+        return \array_map(VehiclePresenter::card(...), $rows);
     }
 
     /** @param array<string, mixed> $fields see VehicleController::fields() */
     public function create(int $pageId, array $fields): int
     {
+        $this->run('vehicle-shift-order.sql', []); // The new vehicle goes first (sort_order 0, the column's default)
         $this->database->query($this->loadSqlFile('vehicle-insert.sql'));
         $this->database->bind(param: ':page_id', value: $pageId);
         $this->bindFields($fields);
@@ -101,6 +105,12 @@ class Vehicle extends Model
         $this->database->bind(param: ':id', value: $id);
         $this->bindFields($fields);
         $this->database->execute();
+    }
+
+    /** @param array<int, int> $orderedIds vehicle ids, first to last */
+    public function reorder(array $orderedIds): void
+    {
+        foreach (\array_values($orderedIds) as $position => $id) $this->run('vehicle-reorder.sql', [':position' => $position, ':id' => $id]);
     }
 
     /** Marks the vehicle as just changed, for bin and restore, which only touch its page */

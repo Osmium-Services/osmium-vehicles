@@ -112,71 +112,122 @@
 
     // ---- Photos ----
 
-    const gallery = document.getElementById('vehicleGallery');
+    // A reload (see below) keeps the tab you were on: it lives in the address
+    document.querySelectorAll('.vehicle-tabs [data-bs-toggle="tab"]').forEach(function (link) {
+        link.addEventListener('shown.bs.tab', function () {
+            history.replaceState(null, '', link.getAttribute('href'));
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust(); // The Photos list was sized while its tab was hidden
+        });
+    });
+    const openTab = document.querySelector('.vehicle-tabs [href="' + window.location.hash + '"]');
+    if (openTab) window.addEventListener('load', function () { bootstrap.Tab.getOrCreateInstance(openTab).show(); });
+
+    // The Photos list is a ListView: its drag, delete and the uploads below reload the page, which would lose edits to the
+    // form that are not saved yet, so they wait until it is
+    let unsaved = false;
+    const markUnsaved = function (event) {
+        if (event && event.target.closest && event.target.closest('.dataTables_wrapper')) return; // The Photos list's own search and page size
+        unsaved = true;
+    };
+    form.addEventListener('input', markUnsaved);
+    form.addEventListener('change', markUnsaved);
+    $('#vehicleDescription').on('summernote.change', markUnsaved);
+    ['addFeatureButton', 'addSpecButton', 'vehicleFeatures', 'vehicleSpecs'].forEach(function (id) {
+        document.getElementById(id).addEventListener('click', function (event) { if (event.target.closest('button')) markUnsaved(); });
+    });
+
+    function blockWhileUnsaved(event) {
+        if (!unsaved) return;
+        event.preventDefault();
+        event.stopPropagation();
+        adminAlert('Save your changes first. Changing photos reloads the page.');
+    }
+
+    const photoList = document.getElementById('vehicle-photos');
+    const dropzone = document.getElementById('vehicleDropzone');
     const uploadInput = document.getElementById('vehicleImageUpload');
 
-    function renderPhoto(image) {
-        const col = document.createElement('div');
-        col.className = 'col-md-4 col-6 vehicle-photo';
-        col.dataset.id = image.id;
+    if (photoList) {
+        // Capture phase: runs before the list's own handlers
+        document.addEventListener('click', function (event) {
+            if (event.target.closest('#vehicle-photos [data-list-action]')) blockWhileUnsaved(event);
+        }, true);
+        photoList.addEventListener('mousedown', function (event) {
+            if (event.target.closest('.drag-handle')) blockWhileUnsaved(event);
+        }, true);
+        dropzone.addEventListener('click', blockWhileUnsaved, true);
+        dropzone.addEventListener('drop', blockWhileUnsaved, true);
 
-        const card = document.createElement('div');
-        card.className = 'card';
+        // ----- View a photo, turn it, save the turn (the same as Gallery's) -----
 
-        const img = document.createElement('img');
-        img.src = image.path;
-        img.alt = '';
-        img.className = 'card-img-top';
-        img.style.cssText = 'height: 120px; object-fit: cover; cursor: grab;';
+        const byId = function (id) { return document.getElementById(id); };
+        const viewModal = { // Bootstrap loads after this script, so it is looked up when needed
+            show: function () { bootstrap.Modal.getOrCreateInstance(byId('viewModal')).show(); },
+            hide: function () { bootstrap.Modal.getOrCreateInstance(byId('viewModal')).hide(); }
+        };
+        const viewImage = byId('viewImage');
+        let viewingId = 0;
+        let turn = 0; // Degrees clockwise on screen, not saved until Save
 
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'btn btn-sm btn-icon btn-danger btn-delete-image';
-        remove.title = 'Remove photo';
-        remove.setAttribute('aria-label', 'Remove photo');
-        remove.innerHTML = '<i class="bx bx-trash"></i>';
-        remove.addEventListener('click', async function () {
-            if (!(await adminConfirm('Remove this photo?'))) return;
+        function showTurn() {
+            const quarter = ((turn % 360) + 360) % 360;
+            viewImage.style.transform = 'rotate(' + turn + 'deg)';
+            byId('viewStage').classList.toggle('turned-sideways', quarter === 90 || quarter === 270);
+            byId('turnSave').disabled = quarter === 0;
+        }
+
+        function openViewer(id) {
+            const photo = (config.photos || {})[id];
+            if (!photo) return;
+            viewingId = id;
+            turn = 0;
+            viewImage.src = photo.viewUrl;
+            viewImage.alt = photo.alt || '';
+            byId('viewTitle').textContent = photo.alt || 'Photo';
+            showTurn();
+            viewModal.show();
+        }
+
+        document.addEventListener('list:action', function (e) {
+            if (e.detail.action === 'view_photo') openViewer(e.detail.id);
+        });
+
+        // Clicking a photo in the grid opens it
+        photoList.addEventListener('click', function (e) {
+            const image = e.target.closest('img');
+            const row = image && image.closest('tr');
+            if (row && row.dataset.id) openViewer(Number(row.dataset.id));
+        });
+
+        byId('turnLeft').addEventListener('click', function () { turn -= 90; showTurn(); });
+        byId('turnRight').addEventListener('click', function () { turn += 90; showTurn(); });
+
+        byId('turnSave').addEventListener('click', async function (event) {
+            const degrees = ((turn % 360) + 360) % 360;
+            if (degrees === 0) return;
+            if (unsaved) { viewModal.hide(); blockWhileUnsaved(event); return; } // The page reloads after a turn
+            this.disabled = true;
             try {
-                await post({ action: 'delete_image', id: vehicleId, image_id: image.id });
-                col.remove();
+                await post({ action: 'rotate_photo', id: viewingId, degrees: degrees });
+                window.location.reload();
             } catch (error) {
+                viewModal.hide();
                 adminAlert(error.message);
             }
         });
 
-        const badge = document.createElement('span');
-        badge.className = 'cover-badge badge bg-primary'; // Shown by CSS on whichever photo is first
-        badge.textContent = 'Cover';
-
-        card.appendChild(img);
-        col.append(card, badge, remove);
-        gallery.appendChild(col);
-    }
-
-    if (gallery) {
-        (config.images || []).forEach(renderPhoto);
-
-        Sortable.create(gallery, {
-            animation: 150,
-            onEnd: async function () {
-                const order = collect('#vehicleGallery .vehicle-photo').map(function (el) { return Number(el.dataset.id); });
-                try {
-                    await post({ action: 'reorder_images', id: vehicleId, order: order });
-                } catch (error) {
-                    adminAlert(error.message);
-                }
-            }
-        });
-
+        let added = 0;
         VehicleUploader.attach({
             input: uploadInput,
-            dropzone: document.getElementById('vehicleDropzone'),
+            dropzone: dropzone,
             list: document.getElementById('vehicleUploadList'),
             actionUrl: actionUrl,
             getVehicleId: function () { return vehicleId; },
-            onUploaded: renderPhoto,
-            onActiveChange: function () {}
+            onUploaded: function () { added++; },
+            // Once the queue is done the server-rendered list is out of date; failed rows stay on screen so their reasons can be read
+            onActiveChange: function (active) {
+                if (active === 0 && added > 0 && !document.querySelector('#vehicleUploadList .is-failed')) window.location.reload();
+            }
         });
     }
 

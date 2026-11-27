@@ -6,5 +6,5 @@ SELECT
 FROM {TABLE} v
 JOIN {PREFIX}pages pg ON pg.id = v.page_id AND pg.deleted_at IS NULL
 WHERE v.is_published = 1
-ORDER BY v.created_at DESC, v.id DESC
+ORDER BY v.sort_order ASC, v.id DESC
 LIMIT :limit

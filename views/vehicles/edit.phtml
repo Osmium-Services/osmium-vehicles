@@ -90,6 +90,26 @@ $siteUrl = '/' . $admin['urlPrefix'] . $v['slug'] . (($admin['urlTrailingSlash']
 </div><!-- End tab-content -->
 </form>
 
+<!-- Photo viewer: outside the form and its tab, so it is laid out as a page-level modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewTitle">Photo</h5>
+                <div class="ms-auto d-flex gap-2 align-items-center">
+                    <button type="button" class="btn btn-icon btn-outline-secondary" id="turnLeft" title="Rotate left" aria-label="Rotate left"><i class="bx bx-rotate-left"></i></button>
+                    <button type="button" class="btn btn-icon btn-outline-secondary" id="turnRight" title="Rotate right" aria-label="Rotate right"><i class="bx bx-rotate-right"></i></button>
+                    <button type="button" class="btn btn-icon btn-primary" id="turnSave" title="Save" aria-label="Save" disabled><i class="bx bx-save"></i></button>
+                    <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body gallery-stage" id="viewStage">
+                <img src="" alt="" id="viewImage">
+            </div>
+        </div>
+    </div>
+</div>
+
 <script nonce="<?= $cspNonce ?? '' ?>">
     window.VehicleConfig = {
         basePath: adminBasePath,
@@ -97,8 +117,9 @@ $siteUrl = '/' . $admin['urlPrefix'] . $v['slug'] . (($admin['urlTrailingSlash']
         editUrl: <?= \json_encode($adminUrl('vehicles/edit/')) ?>,
         features: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($v['features']) ?>,
         specs: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($v['specs']) ?>,
-        images: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson($admin['images']) ?>
+        photos: <?= \Osmium\Services\Vehicles\Models\VehicleText::scriptJson(\array_column($admin['photos'], null, 'id')) ?>
     };
 </script>
+<script src="/assets/admin/js/list-view.js<?= $adminAssetVersion('/assets/admin/js/list-view.js') ?>"></script>
 <script src="/assets/services/osmium-vehicles/vehicle-uploader.js<?= $adminAssetVersion('/assets/services/osmium-vehicles/vehicle-uploader.js') ?>"></script>
 <script src="/assets/services/osmium-vehicles/vehicle-edit.js<?= $adminAssetVersion('/assets/services/osmium-vehicles/vehicle-edit.js') ?>"></script>

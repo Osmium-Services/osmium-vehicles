@@ -20,10 +20,10 @@ return [
         ['key' => 'price_label', 'type' => 'text', 'strong' => true],
         ['key' => 'status_label', 'type' => 'badge', 'text' => true, 'classKey' => 'status_class', 'classPrefix' => 'bg-label-'],
     ],
+    'cornerAction' => ['label' => 'Delete', 'icon' => 'bx-trash', 'event' => 'delete', 'danger' => true],
     'actionsAt' => 'bottom-end',
     'actions' => [
         ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'url' => '{edit_url}'],
         ['label' => 'View on site', 'icon' => 'bx-link-external', 'url' => '{url_path}', 'target' => '_blank'],
-        ['label' => 'Delete', 'icon' => 'bx-trash', 'event' => 'delete', 'danger' => true],
     ],
 ];

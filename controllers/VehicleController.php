@@ -11,6 +11,7 @@ use Osmium\Services\Vehicles\Models\VehicleBin;
 use Osmium\Services\Vehicles\Models\VehicleFiles;
 use Osmium\Services\Vehicles\Models\VehicleHtml;
 use Osmium\Services\Vehicles\Models\VehicleImage;
+use Osmium\Services\Vehicles\Models\VehicleOrder;
 use Osmium\Services\Vehicles\Models\VehiclePresenter;
 use Osmium\Services\Vehicles\Models\VehicleSettings;
 
@@ -25,7 +26,7 @@ use Osmium\Services\Vehicles\Models\VehicleSettings;
  *   - index()  → /admin/vehicles/
  *   - add()    → /admin/vehicles/add/
  *   - edit()   → /admin/vehicles/edit/?id=N
- *   - action() → /admin/vehicles/action/      (save, delete, restore, permanently_delete, upload_image, delete_image, reorder_images)
+ *   - action() → /admin/vehicles/action/      (save, delete, restore, permanently_delete, reorder, upload_image, delete_photo, rotate_photo, reorder_photo, reorder_images)
  */
 class VehicleController extends AdminController
 {
@@ -56,13 +57,25 @@ class VehicleController extends AdminController
     {
         $model = new Vehicle($this->osmium->dataSource);
 
-        $id = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
-        $this->osmium->clearStashedQuerystring();
+        $id = $this->editedVehicleId();
         $row = $id ? $model->getById($id) : null;
         if (!$row) $this->redirect('vehicles/');
 
         $this->prepareFormData(model: $model, id: $id, row: $row);
         $this->setView('vehicles/edit.phtml');
+    }
+
+    /**
+     * The vehicle being edited. Core strips ?id= from the address and keeps it for one read, so a reload (a photo change or
+     * upload reloads the page) would lose it and bounce to the vehicles list: the id is remembered in the session instead.
+     */
+    private function editedVehicleId(): int
+    {
+        $stashed = (int) $this->osmium->getStashedParam(key: 'id', default: 0); // Core moves query params out of $_GET
+        $this->osmium->clearStashedQuerystring();
+        if ($stashed > 0) $_SESSION['vehicle_edit_id'] = $stashed;
+
+        return (int) ($_SESSION['vehicle_edit_id'] ?? 0);
     }
 
     private function prepareFormData(Vehicle $model, int $id, ?array $row): void
@@ -88,13 +101,32 @@ class VehicleController extends AdminController
             'slug' => isset($row['url']) ? \substr($row['url'], \strlen($prefix)) : '',
             'metaDescription' => $row['meta_description'] ?? '',
         ];
-        $this->data['admin']['images'] = $id ? (new VehicleImage($this->osmium->dataSource))->listFor($id) : [];
+        $this->data['admin']['photos'] = $id ? $this->photoRows((new VehicleImage($this->osmium->dataSource))->listFor($id), $row) : [];
+        $this->data['admin']['photoList'] = require __DIR__ . '/../lists/vehicle-photos.php';
         $this->data['admin']['makes'] = $model->makes();
         $this->data['admin']['models'] = $model->models();
         $this->data['admin']['statuses'] = VehiclePresenter::STATUSES;
         $this->data['admin']['urlPrefix'] = $prefix;
         $this->data['admin']['maxUploadSize'] = \Osmium\Modules\Admin\Services\OsmiumAdmin::getMaxUploadSize()['formatted'] ?? '';
         $this->data['admin']['showSavedMessage'] = $this->consumeSavedFlag();
+    }
+
+    /** @return list<array<string, mixed>> rows for the Photos list; the first photo is the cover */
+    private function photoRows(array $images, array $vehicle): array
+    {
+        $alt = VehiclePresenter::displayName($vehicle);
+        $rows = [];
+        foreach ($images as $position => $image) {
+            $rows[] = [
+                'id' => (int) $image['id'],
+                'path' => (string) $image['path'],
+                'alt' => $alt,
+                'viewUrl' => (string) $image['path'],
+                'coverBadge' => $position === 0 ? '<span class="badge bg-label-primary">Cover</span>' : '',
+            ];
+        }
+
+        return $rows;
     }
 
     private function consumeSavedFlag(): bool
@@ -126,8 +158,11 @@ class VehicleController extends AdminController
                 'restore' => $this->restoreVehicle($id),
                 'permanently_delete' => $this->permanentlyDeleteVehicle($id),
                 'upload_image' => $this->uploadImage($id, $_FILES['image'] ?? []),
-                'delete_image' => $this->deleteImage($id, (int) ($input['image_id'] ?? 0)),
-                'reorder_images' => $this->reorderImages($id, (array) ($input['order'] ?? [])),
+                'reorder' => $this->moveVehicle($id, (int) ($input['after'] ?? 0), (int) ($input['before'] ?? 0)),
+                'reorder_images' => $this->reorderImages($id, (array) ($input['order'] ?? [])), // The add wizard's own photo grid
+                'reorder_photo' => $this->movePhoto($id, (int) ($input['after'] ?? 0), (int) ($input['before'] ?? 0)),
+                'rotate_photo' => $this->rotatePhoto($id, (int) ($input['degrees'] ?? 0)),
+                'delete_photo' => $this->deletePhoto($id),
                 default => throw new \InvalidArgumentException('Unknown action'),
             };
 
@@ -305,21 +340,56 @@ class VehicleController extends AdminController
         return ['success' => true, 'image' => ['id' => $imageId, 'path' => $path]];
     }
 
-    private function deleteImage(int $vehicleId, int $imageId): array
+    /** $id is the photo's id; its vehicle comes from the photo */
+    private function deletePhoto(int $id): array
     {
         $images = new VehicleImage($this->osmium->dataSource);
-        $image = $images->getById($imageId);
-        if (!$image || (int) $image['vehicle_id'] !== $vehicleId) throw new \InvalidArgumentException('Photo not found');
+        $image = $images->getById($id);
+        if (!$image) throw new \InvalidArgumentException('Photo not found');
 
         (new VehicleFiles())->remove((string) $image['path'], $_SERVER['DOCUMENT_ROOT']);
-        $images->delete($imageId);
+        $images->delete($id);
 
         return ['success' => true];
+    }
+
+    /** $id is the photo's id; the turned photo gets a new file name and path */
+    private function rotatePhoto(int $id, int $degrees): array
+    {
+        $images = new VehicleImage($this->osmium->dataSource);
+        $image = $images->getById($id);
+        if (!$image) throw new \InvalidArgumentException('Photo not found');
+
+        $images->setPath($id, (new VehicleFiles())->rotate((string) $image['path'], $degrees, $_SERVER['DOCUMENT_ROOT']));
+
+        return ['success' => true, 'id' => $id];
     }
 
     private function reorderImages(int $vehicleId, array $order): array
     {
         (new VehicleImage($this->osmium->dataSource))->reorder($vehicleId, \array_map('intval', $order));
+
+        return ['success' => true];
+    }
+
+    private function movePhoto(int $id, int $afterId, int $beforeId): array
+    {
+        $images = new VehicleImage($this->osmium->dataSource);
+        $image = $images->getById($id);
+        if (!$image) throw new \InvalidArgumentException('Photo not found');
+
+        $vehicleId = (int) $image['vehicle_id'];
+        $ids = \array_map('intval', \array_column($images->listFor($vehicleId), 'id'));
+        $images->reorder($vehicleId, VehicleOrder::place($ids, $id, $afterId, $beforeId));
+
+        return ['success' => true];
+    }
+
+    private function moveVehicle(int $id, int $afterId, int $beforeId): array
+    {
+        $model = new Vehicle($this->osmium->dataSource);
+        $ids = \array_map('intval', \array_column($model->listAll(), 'id'));
+        $model->reorder(VehicleOrder::place($ids, $id, $afterId, $beforeId));
 
         return ['success' => true];
     }

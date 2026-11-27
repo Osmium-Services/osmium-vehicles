@@ -53,6 +53,14 @@ class VehicleImage extends Model
         return (int) $this->database->lastInsertId();
     }
 
+    public function setPath(int $id, string $path): void
+    {
+        $this->database->query($this->loadSqlFile('image-set-path.sql'));
+        $this->database->bind(param: ':path', value: $path);
+        $this->database->bind(param: ':id', value: $id);
+        $this->database->execute();
+    }
+
     public function delete(int $id): void
     {
         $this->database->query($this->loadSqlFile('image-delete.sql'));

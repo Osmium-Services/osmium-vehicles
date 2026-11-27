@@ -36,6 +36,24 @@ class VehicleFiles
         return $urlDir . $filename;
     }
 
+    /**
+     * Turns a stored photo clockwise into a new file (a new name, so browsers do not show the old picture) and removes the
+     * old one. Only files this service stored are touched. There is no kept original, so each turn re-compresses the photo.
+     *
+     * @return string the public path of the turned photo
+     */
+    public function rotate(string $path, int $degrees, string $documentRoot): string
+    {
+        if (!self::isVehicleImage($path)) throw new \InvalidArgumentException('Photo not found');
+
+        $root = \rtrim($documentRoot, '/');
+        $newPath = \dirname($path) . '/' . \bin2hex(\random_bytes(8)) . '.webp';
+        (new ImageTools())->rotateToWebp(fromPath: $root . $path, toPath: $root . $newPath, degrees: $degrees, quality: self::WEBP_QUALITY);
+        $this->remove($path, $documentRoot);
+
+        return $newPath;
+    }
+
     /** Removes one stored photo. Only files this service stored are touched. */
     public function remove(string $path, string $documentRoot): void
     {

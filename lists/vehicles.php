@@ -44,7 +44,8 @@ return [
         'noun' => ['vehicle', 'vehicles'],
         'endpoint' => 'vehicles/action/',
         'emptyText' => 'No vehicles yet. Use New Vehicle to add the first.',
-        'order' => null, // keep the server's newest-first order until a header is clicked
+        'order' => null, // the server's own order: the one set by dragging
+        'orderable' => true,
         'grid' => require __DIR__ . '/../grids/vehicles.php',
         'columns' => [
             ['key' => 'image', 'label' => 'Image', 'type' => 'image', 'altKey' => 'name', 'sortable' => false, 'hideBelow' => 'md'],
